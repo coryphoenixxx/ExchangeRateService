@@ -1,0 +1,74 @@
+[tool.poetry]
+name = "exchangerateservice"
+version = "0.1.0"
+description = ""
+authors = ["coryphoenixxx <coryphoenixxx@gmail.com>"]
+readme = "README.md"
+packages = [
+    { include = "exchange_rate_service", from = "src" },
+]
+
+[tool.poetry.scripts]
+fetch_and_update = "exchange_rate_service.updater.fetch_and_update:main"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+
+[tool.poetry.group.updater.dependencies]
+aiohttp = "^3.9.5"
+backoff = "^2.2.1"
+redis = "^5.0.7"
+adaptix = "^3.0.0b7"
+
+[tool.poetry.group.tg_bot.dependencies]
+aiogram = "^3.10.0"
+redis = "^5.0.7"
+adaptix = "^3.0.0b7"
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.5.2"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    "ANN101",
+    "ANN102",
+    "ANN401",
+    "ANN003",
+    "COM812",
+    "D100",
+    "D101",
+    "D102",
+    "D103",
+    "D104",
+    "D105",
+    "D106",
+    "D107",
+    "D203",
+    "D212",
+    "D400",
+    "D415",
+    "EM101",
+    "EM102",
+    "EXE002",
+    "FBT",
+    "ISC001",
+    "N999",
+    "PLR0913",
+    "TD002",
+    "TD003",
+    "TRY003",
+    "RUF001",
+    "RUF002",
+    "RUF003",
+    "TCH003",
+]
+fixable = ["ALL"]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

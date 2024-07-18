@@ -1,0 +1,12 @@
+[bot]
+token = ""
+
+[storage]
+hm_name="rates"
+base_currency="RUB"
+redis_host="redis"
+redis_port=6379
+redis_password="qwerty123"
+
+[cbr]
+url="https://cbr.ru/scripts/XML_daily.asp"

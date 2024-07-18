@@ -1,0 +1,69 @@
+services:
+  updater:
+    container_name: updater
+    command: /bin/bash -c "poetry run python -m updater"
+    restart: always
+    depends_on:
+      - redis
+    build:
+      context: .
+      dockerfile: build/updater/Dockerfile
+    volumes:
+      - ./config:/app/src/exchange_rate_service/config:ro
+    environment:
+      - CONFIG_PATH=${CONFIG_PATH:-./config/config.toml}
+    networks:
+      - default
+    labels:
+      ofelia.enabled: "true"
+      ofelia.job-exec.update.schedule: "0 0 0 * * *"
+      ofelia.job-exec.update.command: "poetry run fetch_and_update"
+
+
+  tg_bot:
+    container_name: tg_bot
+    command: /bin/bash -c "poetry run python -m tg_bot"
+    restart: always
+    depends_on:
+      - updater
+      - redis
+    build:
+      context: .
+      dockerfile: build/tg_bot/Dockerfile
+    volumes:
+      - ./config:/app/src/exchange_rate_service/config:ro
+    environment:
+      - CONFIG_PATH=${CONFIG_PATH:-./config/config.toml}
+    networks:
+      - default
+
+  ofelia:
+    image: mcuadros/ofelia:latest
+    command: daemon --docker
+    restart: always
+    depends_on:
+      - updater
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+  redis:
+    image: redis:latest
+    restart: always
+    volumes:
+      - redis_data:/data
+    command: >
+      --requirepass ${REDIS_PASSWORD}
+    ports:
+      - "6379:6379"
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    networks:
+      - default
+
+networks:
+  default:
+    driver: bridge
+
+volumes:
+  redis_data:
+    driver: local
