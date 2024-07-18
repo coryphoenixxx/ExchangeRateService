@@ -7,9 +7,9 @@ from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from exchange_rate_service.common.config_loader import load_config
-from exchange_rate_service.common.configs import BotConfig
 from exchange_rate_service.common.converter import Converter
 from exchange_rate_service.common.storage import RatesStorage, init_storage
+from exchange_rate_service.tg_bot.config import BotConfig
 from exchange_rate_service.tg_bot.contollers import router
 
 logger = logging.getLogger(__name__)

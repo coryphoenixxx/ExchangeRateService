@@ -2,8 +2,6 @@ from decimal import ROUND_HALF_EVEN, Decimal, InvalidOperation
 
 from exchange_rate_service.common.storage import RatesStorage
 
-URL = "https://cbr.ru/scripts/XML_daily.asp"
-
 
 class NegativeUnitCountError(Exception): ...
 

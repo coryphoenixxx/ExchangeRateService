@@ -7,8 +7,8 @@ import aiohttp
 import backoff
 from aiohttp import ClientTimeout
 from exchange_rate_service.common.config_loader import load_config
-from exchange_rate_service.common.configs import CBRConfig
-from exchange_rate_service.common.storage import RatesStorage, init_storage
+from exchange_rate_service.common.storage import init_storage
+from exchange_rate_service.updater.config import CBRConfig
 
 logger = logging.getLogger(__name__)
 
@@ -19,11 +19,14 @@ logger = logging.getLogger(__name__)
     max_time=300,
 )
 async def fetch_exchange_rates(url: str) -> str:
-    async with aiohttp.ClientSession(timeout=ClientTimeout(10)) as session, session.get(url) as resp:
+    async with (
+        aiohttp.ClientSession(timeout=ClientTimeout(10)) as session,
+        session.get(url) as resp,
+    ):
         return await resp.text()
 
 
-async def parse_cbr_xml(xml: str) -> dict[str, str]:
+def parse_cbr_xml(xml: str) -> dict[str, str]:
     root = ET.ElementTree(ET.fromstring(xml)).getroot()
 
     exchange_rates_map = {}
@@ -36,13 +39,17 @@ async def parse_cbr_xml(xml: str) -> dict[str, str]:
     return exchange_rates_map
 
 
-async def fetch_and_update(url: str, storage: RatesStorage) -> None:
+async def fetch_and_update() -> None:
+    cbr_config = load_config(CBRConfig, scope="cbr")
+
+    storage = init_storage()
+
     try:
-        cbr_xml = await fetch_exchange_rates(url=url)
+        cbr_xml = await fetch_exchange_rates(url=cbr_config.url)
     except Exception:
         logger.exception("Couldn't get data")
     else:
-        exchange_rates_map = await parse_cbr_xml(cbr_xml)
+        exchange_rates_map = parse_cbr_xml(cbr_xml)
 
         await storage.update(exchange_rates_map)
 
@@ -50,14 +57,7 @@ async def fetch_and_update(url: str, storage: RatesStorage) -> None:
 
 
 def main() -> NoReturn:
-    cbr_config = load_config(CBRConfig, scope="cbr")
-
-    asyncio.run(
-        fetch_and_update(
-            url=cbr_config.url,
-            storage=init_storage(),
-        )
-    )
+    asyncio.run(fetch_and_update())
 
 
 if __name__ == "__main__":
